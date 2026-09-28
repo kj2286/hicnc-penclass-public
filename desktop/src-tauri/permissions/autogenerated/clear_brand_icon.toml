@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-clear-brand-icon"
+description = "Enables the clear_brand_icon command without any pre-configured scope."
+commands.allow = ["clear_brand_icon"]
+
+[[permission]]
+identifier = "deny-clear-brand-icon"
+description = "Denies the clear_brand_icon command without any pre-configured scope."
+commands.deny = ["clear_brand_icon"]

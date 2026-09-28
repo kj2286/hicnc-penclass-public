@@ -1,0 +1,314 @@
+/* HICNC B design. Sources and component decisions: docs/DESIGN-SYSTEM.md. */
+@font-face {
+  font-family: 'Pretendard Local';
+  src: url('/fonts/PretendardVariable.woff2') format('woff2');
+  font-weight: 45 920;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter Local';
+  src: url('/fonts/InterLatinVariable.woff2') format('woff2');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 1. Primitives: raw values verified against the live B site and its source. */
+:root {
+  --hc-white: #ffffff;
+  --hc-gray-50: #f9fafb;
+  --hc-gray-100: #f3f4f6;
+  --hc-gray-200: #e5e7eb;
+  --hc-gray-300: #d1d5db;
+  --hc-gray-400: #9ca3af;
+  --hc-gray-500: #6b7280;
+  --hc-gray-600: #4b5563;
+  --hc-gray-700: #374151;
+  --hc-gray-800: #1f2937;
+  --hc-gray-900: #111827;
+  --hc-red-50: #fff3f4;
+  --hc-red-500: #e52727;
+  --hc-red-700: #b31d1d;
+  --hc-yellow-50: #fffaea;
+  --hc-blue-50: #f1f3fe;
+  --hc-green-50: #e7faef;
+  --hc-pink-50: #fff2fc;
+  --hc-green-500: #3aaf57;
+  --hc-green-700: #166534;
+  --hc-amber-500: #fdbc15;
+  --hc-amber-800: #92400e;
+  --hc-space-1: 4px;
+  --hc-space-2: 8px;
+  --hc-space-3: 12px;
+  --hc-space-4: 16px;
+  --hc-space-5: 20px;
+  --hc-space-6: 24px;
+  --hc-space-8: 32px;
+  --hc-space-10: 40px;
+  --hc-radius-8: 8px;
+  --hc-radius-12: 12px;
+  --hc-radius-16: 16px;
+  --hc-radius-24: 24px;
+  --hc-radius-pill: 80px;
+  --hc-size-caption: 12.5px;
+  --hc-size-small: 14px;
+  --hc-size-body: 15px;
+  --hc-size-section: 18px;
+  --hc-size-title: 24px;
+  --hc-weight-regular: 400;
+  --hc-weight-medium: 500;
+  --hc-weight-semibold: 600;
+  --hc-weight-bold: 700;
+  --hc-line-body: 1.6;
+  --hc-line-heading: 1.3;
+  --hc-shadow-sm: 0 2px 2px rgb(17 24 39 / 6%), 0 3px 3px rgb(17 24 39 / 4%);
+  --hc-shadow-card: 0 16px 16px rgb(17 24 39 / 3%), 0 8px 8px rgb(17 24 39 / 3%), 0 4px 4px rgb(17 24 39 / 3%), 0 2px 2px -2px rgb(17 24 39 / 3%), 0 0 0 1px rgb(17 24 39 / 12%);
+  --hc-shadow-float: 0 24px 24px -12px rgb(17 24 39 / 4%), 0 12px 12px -6px rgb(17 24 39 / 4%), 0 6px 6px -3px rgb(17 24 39 / 4%), 0 0 0 1px rgb(17 24 39 / 10%);
+  --hc-ring-red: 0 0 0 3px rgb(229 39 39 / 20%);
+  --hc-ease-standard: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --hc-duration-fast: 150ms;
+  --hc-opacity-disabled: 0.5;
+  --hc-icon-size: 18px;
+  --hc-icon-stroke: 1.75;
+}
+
+/* 2. Semantic: use these purpose names in new UI. */
+:root {
+  --hc-color-canvas: var(--hc-white);
+  --hc-color-app: var(--hc-gray-50);
+  --hc-color-surface: var(--hc-white);
+  --hc-color-surface-muted: var(--hc-gray-50);
+  --hc-color-surface-hover: var(--hc-gray-100);
+  --hc-color-text: var(--hc-gray-900);
+  --hc-color-text-secondary: var(--hc-gray-600);
+  --hc-color-text-muted: var(--hc-gray-500);
+  --hc-color-line: var(--hc-gray-200);
+  --hc-color-line-strong: var(--hc-gray-300);
+  --hc-color-primary: var(--hc-red-500);
+  --hc-color-primary-hover: var(--hc-red-700);
+  --hc-color-primary-text: var(--hc-white);
+  --hc-color-primary-subtle: var(--hc-red-50);
+  --hc-color-link: var(--hc-red-700);
+  --hc-color-positive: var(--hc-green-700);
+  --hc-color-positive-subtle: var(--hc-green-50);
+  --hc-color-warning: var(--hc-amber-800);
+  --hc-color-warning-subtle: var(--hc-yellow-50);
+  --hc-color-critical: var(--hc-red-700);
+  --hc-color-critical-subtle: var(--hc-red-50);
+  --hc-font-body: 'Pretendard Local', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
+  --hc-font-numeric: 'Inter Local', 'Pretendard Local', sans-serif;
+  --hc-text-caption: var(--hc-size-caption);
+  --hc-text-control: var(--hc-size-small);
+  --hc-text-body: var(--hc-size-body);
+  --hc-text-section: var(--hc-size-section);
+  --hc-text-title: var(--hc-size-title);
+  --hc-space-control: var(--hc-space-2);
+  --hc-space-content: var(--hc-space-4);
+  --hc-space-section: var(--hc-space-6);
+  --hc-radius-control: var(--hc-radius-12);
+  --hc-radius-card: var(--hc-radius-16);
+  --hc-radius-panel: var(--hc-radius-24);
+  --hc-focus-ring: var(--hc-ring-red);
+}
+
+/* 3. Component: connect existing components without replacing their layout. */
+:root {
+  --hc-button-height: var(--hc-space-10);
+  --hc-button-padding-x: var(--hc-space-4);
+  --hc-button-gap: var(--hc-space-control);
+  --hc-button-radius: var(--hc-radius-control);
+  --hc-button-bg: var(--hc-color-primary);
+  --hc-button-bg-hover: var(--hc-color-primary-hover);
+  --hc-button-text: var(--hc-color-primary-text);
+  --hc-button-font-size: var(--hc-text-control);
+  --hc-button-disabled-opacity: var(--hc-opacity-disabled);
+  --hc-input-bg: var(--hc-color-surface);
+  --hc-input-border: var(--hc-color-line-strong);
+  --hc-input-radius: var(--hc-radius-control);
+  --hc-card-bg: var(--hc-color-surface);
+  --hc-card-radius: var(--hc-radius-card);
+  --hc-card-shadow: var(--hc-shadow-card);
+  --hc-sidebar-bg: var(--hc-color-surface);
+  --hc-sidebar-radius: var(--hc-radius-card);
+  --hc-nav-radius: var(--hc-radius-8);
+  --hc-nav-text: var(--hc-color-text-secondary);
+  --hc-nav-bg-hover: var(--hc-color-surface-hover);
+  --hc-nav-bg-active: var(--hc-color-primary-subtle);
+  --hc-nav-text-active: var(--hc-color-link);
+  --hc-table-row-hover: var(--hc-color-surface-muted);
+  --hc-table-row-line: var(--hc-color-line);
+
+  /* Compatibility layer used by the original World Penclass components. */
+  --ap-font: var(--hc-font-body);
+  --ap-ink: var(--hc-color-text);
+  --ap-ink-2: var(--hc-color-text-secondary);
+  --ap-ink-3: var(--hc-color-text-muted);
+  --ap-bg: var(--hc-color-app);
+  --ap-surface: var(--hc-color-surface);
+  --ap-fill: var(--hc-color-surface-muted);
+  --ap-fill-2: var(--hc-color-surface-hover);
+  --ap-line: var(--hc-color-line);
+  --ap-line-weak: var(--hc-color-line);
+  --ap-line-strong: var(--hc-color-line-strong);
+  --ap-blue: var(--hc-color-primary);
+  --ap-blue-hover: var(--hc-color-primary-hover);
+  --ap-green: var(--hc-green-500);
+  --ap-green-fg: var(--hc-color-positive);
+  --ap-orange: var(--hc-amber-500);
+  --ap-orange-fg: var(--hc-color-warning);
+  --ap-red: var(--hc-color-critical);
+  --ap-red-fg: var(--hc-color-critical);
+  --rt-point: var(--hc-color-primary);
+  --rt-point-fg: var(--hc-color-primary-text);
+  --rt-radius: var(--hc-radius-control);
+  --ap-radius-card: var(--hc-radius-card);
+  --ap-radius-panel: var(--hc-radius-panel);
+  --ap-control-h: var(--hc-button-height);
+  --ap-shadow-card: var(--hc-card-shadow);
+  --ap-shadow-float: var(--hc-shadow-float);
+  --ap-focus: var(--hc-focus-ring);
+  --ap-ease: var(--hc-ease-standard);
+  --ap-dur: var(--hc-duration-fast);
+  /* Portaled dialogs inherit the same palette even outside the page wrapper. */
+  --seed-color-bg-layer-basement: var(--hc-color-app);
+  --seed-color-bg-layer-default: var(--hc-color-surface);
+  --seed-color-bg-layer-fill: var(--hc-color-surface-muted);
+  --seed-color-bg-layer-floating: var(--hc-color-surface);
+  --seed-color-bg-brand-solid: var(--hc-color-primary);
+  --seed-color-bg-brand-weak: var(--hc-color-primary-subtle);
+  --seed-color-fg-brand: var(--hc-color-link);
+  --seed-color-fg-neutral: var(--hc-color-text);
+  --seed-color-fg-neutral-muted: var(--hc-color-text-secondary);
+  --seed-color-fg-neutral-subtle: var(--hc-color-text-muted);
+  --seed-color-fg-placeholder: var(--hc-color-text-muted);
+  --seed-color-stroke-neutral-weak: var(--hc-color-line);
+  --seed-color-stroke-neutral-muted: var(--hc-color-line-strong);
+  --seed-color-stroke-focus-ring: var(--hc-color-primary);
+}
+
+body, .font-sans { font-family: var(--hc-font-body); }
+[data-portal] {
+  --seed-color-bg-neutral-weak: var(--hc-color-surface-hover);
+  --seed-color-bg-positive-weak: var(--hc-color-positive-subtle);
+  --seed-color-bg-warning-weak: var(--hc-color-warning-subtle);
+  --seed-color-bg-critical-weak: var(--hc-color-critical-subtle);
+  font-family: var(--hc-font-body);
+  line-height: var(--hc-line-body);
+  letter-spacing: -0.005em;
+}
+[data-portal='teacher'], [data-portal='student'], [data-portal='admin'] {
+  background: var(--hc-color-app);
+}
+[data-portal] h1, [data-portal] h2 {
+  font-weight: var(--hc-weight-bold);
+  letter-spacing: -0.025em;
+  line-height: var(--hc-line-heading);
+}
+[data-portal] h3 { font-weight: var(--hc-weight-semibold); }
+.ap-num { font-family: var(--hc-font-numeric); }
+
+.rt-gnb {
+  background: var(--hc-sidebar-bg);
+  border-color: transparent;
+  border-radius: var(--hc-sidebar-radius);
+  box-shadow: var(--hc-card-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.rt-gnb-link, .rt-gnb-link-active {
+  border-radius: var(--hc-nav-radius);
+  font-size: var(--hc-text-control);
+}
+.rt-gnb-link { color: var(--hc-nav-text); }
+.rt-gnb-link:hover { color: var(--hc-color-text); background: var(--hc-nav-bg-hover); }
+[data-portal] .rt-gnb-link-active,
+[data-portal] .rt-gnb-link-active:hover {
+  background: var(--hc-nav-bg-active);
+  color: var(--hc-nav-text-active);
+  font-weight: var(--hc-weight-semibold);
+}
+.rt-gnb-link svg, .rt-gnb-link-active svg {
+  width: var(--hc-icon-size);
+  height: var(--hc-icon-size);
+  stroke-width: var(--hc-icon-stroke);
+}
+.rt-gnb-icon { color: var(--hc-color-text-muted); border-radius: var(--hc-nav-radius); }
+.rt-gnb-icon:hover { color: var(--hc-color-text); background: var(--hc-nav-bg-hover); }
+.hc-product-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--hc-space-2);
+  color: var(--hc-color-text-secondary);
+  text-decoration: none;
+}
+.hc-product-brand img { width: 100px; height: 32px; object-fit: contain; }
+.hc-product-brand span { font-size: var(--hc-text-caption); font-weight: var(--hc-weight-medium); }
+.hc-product-brand:focus-visible { outline: none; box-shadow: var(--hc-focus-ring); border-radius: var(--hc-nav-radius); }
+
+.rt-card, .rt-panel {
+  background: var(--hc-card-bg);
+  border-color: transparent;
+  border-radius: var(--hc-card-radius);
+  box-shadow: var(--hc-card-shadow);
+}
+.rt-btn {
+  border-radius: var(--hc-button-radius);
+  height: var(--hc-button-height);
+  gap: var(--hc-button-gap);
+  padding-inline: var(--hc-button-padding-x);
+  font-size: var(--hc-button-font-size);
+  font-weight: var(--hc-weight-semibold);
+  background: var(--hc-color-surface-hover);
+  color: var(--hc-color-text);
+}
+.rt-btn:hover { background: var(--hc-color-line); }
+.rt-btn:active { transform: scale(0.99); }
+.rt-btn-primary { background: var(--rt-point); color: var(--rt-point-fg); }
+.rt-btn-primary:hover { background: var(--hc-button-bg-hover); }
+.rt-btn-dark { background: var(--hc-gray-800); color: var(--hc-white); }
+.rt-btn-dark:hover { background: var(--hc-color-text); }
+.rt-btn-outline, .rt-btn-outline-dark { background: var(--hc-color-surface); border-color: var(--hc-color-line); }
+.rt-btn-outline:hover, .rt-btn-outline-dark:hover { background: var(--hc-color-surface-muted); border-color: var(--hc-color-line-strong); }
+.rt-btn:disabled, [data-portal] .seed-action-button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+/* Match the inherited auth selectors and importance; retain their 44px height. */
+.ap-auth-submit,
+.ap-auth-submit:hover,
+.ap-auth-submit:disabled {
+  background: var(--hc-button-bg) !important;
+  color: var(--hc-button-text) !important;
+  border-radius: var(--hc-button-radius) !important;
+  font-weight: var(--hc-weight-semibold) !important;
+}
+.ap-auth-submit:hover:not(:disabled) { background: var(--hc-button-bg-hover) !important; }
+.ap-auth-submit:disabled {
+  opacity: var(--hc-button-disabled-opacity);
+  cursor: not-allowed;
+  transform: none;
+}
+.ap-auth-submit:focus-visible { outline: none; box-shadow: var(--hc-focus-ring); }
+[data-portal] .seed-action-button { font-family: var(--hc-font-body); font-weight: var(--hc-weight-semibold); }
+[data-portal] .seed-text-input__root { background: var(--hc-input-bg); }
+[data-portal] .seed-text-input__root:focus-within { box-shadow: var(--hc-focus-ring); }
+.sp-dialog {
+  font-family: var(--hc-font-body);
+  border-radius: var(--hc-radius-panel) !important;
+  box-shadow: var(--hc-shadow-float) !important;
+}
+.rt-link { color: var(--hc-color-link); }
+.hc-update-nudge {
+  border-radius: var(--hc-button-radius);
+  background: var(--hc-button-bg);
+  color: var(--hc-button-text);
+  box-shadow: var(--hc-shadow-float);
+  font-family: var(--hc-font-body);
+  font-size: var(--hc-button-font-size);
+  font-weight: var(--hc-weight-semibold);
+  transition: background var(--hc-duration-fast) var(--hc-ease-standard);
+}
+.hc-update-nudge:hover { background: var(--hc-button-bg-hover); }
+.hc-update-nudge:focus-visible { outline: none; box-shadow: var(--hc-focus-ring), var(--hc-shadow-float); }
+@media (prefers-reduced-motion: reduce) {
+  .rt-btn, .rt-gnb-link, .rt-gnb-link-active, .hc-update-nudge { transition: none; }
+}

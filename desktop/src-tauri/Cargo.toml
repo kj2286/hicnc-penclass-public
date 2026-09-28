@@ -1,0 +1,27 @@
+[package]
+name = "hicnc-penclass-desk"
+description = "하이씨앤씨 펜클래스 — 선생님 웹 전 기능 + 크래들/BLE 네이티브 브리지"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# image-png: 학원 로고(PNG)를 창 아이콘으로 넣으려면 필요하다 (brand)
+tauri = { version = "2", features = ["image-png"] }
+tauri-plugin-process = "2"
+tauri-plugin-dialog = "2"
+desk-core = { path = "../desk-core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# save_pdf — 리포트 PDF(base64)를 다운로드 폴더에 저장 (0.2.24)
+base64 = "0.22"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+
+[[bin]]
+name = "hicnc-penclass-desk"
+path = "src/main.rs"

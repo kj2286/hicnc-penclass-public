@@ -1,0 +1,17 @@
+desktop/
+installers/
+artifacts/
+.artifacts/
+_workspace/
+.git/
+.github/
+.omc/
+.agents/
+.codex/
+docs/
+supabase/
+node_modules/
+dist/
+.env*
+HANDOFF.md
+AGENTS.md

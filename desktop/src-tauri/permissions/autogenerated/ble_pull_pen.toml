@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ble-pull-pen"
+description = "Enables the ble_pull_pen command without any pre-configured scope."
+commands.allow = ["ble_pull_pen"]
+
+[[permission]]
+identifier = "deny-ble-pull-pen"
+description = "Denies the ble_pull_pen command without any pre-configured scope."
+commands.deny = ["ble_pull_pen"]

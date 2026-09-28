@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ble-live-start"
+description = "Enables the ble_live_start command without any pre-configured scope."
+commands.allow = ["ble_live_start"]
+
+[[permission]]
+identifier = "deny-ble-live-start"
+description = "Denies the ble_live_start command without any pre-configured scope."
+commands.deny = ["ble_live_start"]

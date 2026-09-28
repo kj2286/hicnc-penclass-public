@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-cradle-erase"
+description = "Enables the cradle_erase command without any pre-configured scope."
+commands.allow = ["cradle_erase"]
+
+[[permission]]
+identifier = "deny-cradle-erase"
+description = "Denies the cradle_erase command without any pre-configured scope."
+commands.deny = ["cradle_erase"]

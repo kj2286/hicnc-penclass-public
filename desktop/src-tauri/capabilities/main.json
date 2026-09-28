@@ -1,0 +1,38 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-hicnc",
+  "description": "하이씨앤씨 운영 웹에서 크래들·BLE·인쇄·PDF 저장 기능을 사용한다",
+  "windows": [
+    "main"
+  ],
+  "local": false,
+  "permissions": [
+    "core:default",
+    "allow-cradle-snapshot",
+    "allow-cradle-probe",
+    "allow-cradle-pull",
+    "allow-cradle-erase",
+    "allow-ble-scan-pens",
+    "allow-ble-pull-pen",
+    "allow-ble-live-start",
+    "allow-ble-live-start-mac",
+    "allow-ble-live-stop",
+    "allow-ble-live-active",
+    "allow-ble-rename",
+    "allow-print-page",
+    "allow-print-discover",
+    "allow-print-system-printers",
+    "allow-print-probe",
+    "allow-print-ncode",
+    "allow-print-job-status",
+    "allow-save-pdf",
+    "allow-open-receive-dir",
+    "allow-apply-brand-icon",
+    "allow-clear-brand-icon"
+  ],
+  "remote": {
+    "urls": [
+      "https://hicnc-penclass.vercel.app"
+    ]
+  }
+}

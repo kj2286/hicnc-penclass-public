@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ble-scan-pens"
+description = "Enables the ble_scan_pens command without any pre-configured scope."
+commands.allow = ["ble_scan_pens"]
+
+[[permission]]
+identifier = "deny-ble-scan-pens"
+description = "Denies the ble_scan_pens command without any pre-configured scope."
+commands.deny = ["ble_scan_pens"]

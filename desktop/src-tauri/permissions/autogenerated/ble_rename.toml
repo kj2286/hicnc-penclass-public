@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ble-rename"
+description = "Enables the ble_rename command without any pre-configured scope."
+commands.allow = ["ble_rename"]
+
+[[permission]]
+identifier = "deny-ble-rename"
+description = "Denies the ble_rename command without any pre-configured scope."
+commands.deny = ["ble_rename"]

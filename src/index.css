@@ -1,0 +1,464 @@
+@import '@seed-design/css/base.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 다크모드 미지원 — OS 설정과 무관하게 항상 라이트로 렌더 (폼 컨트롤·스크롤바 포함) */
+:root {
+  color-scheme: only light;
+}
+
+/* ── 팝업 공통 디자인 (펜클래스 전 팝업 동일 적용) ──────────────────
+   구조: 헤더(제목+설명) / 본문(필드 스택) / 푸터(우측 액션)
+   원칙: 위계는 여백·굵기로. 장식 최소. 본문만 스크롤.
+   모션: 애플식 — 스크림이 뒤를 흐리고, 팝업은 제자리에서 살짝 커지며 나타난다 */
+@keyframes sp-dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes sp-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.sp-dialog {
+  /* 상하좌우 24px 고정 — 팝업마다 다르던 여백을 하나로 */
+  padding: 24px !important;
+  max-height: min(86vh, 720px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  /* 배경 색조를 머금은 넓은 그림자 — 링 대신 깊이로 띄운다 */
+  border-radius: 20px !important;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 32px 64px -24px rgba(0, 0, 0, 0.3) !important;
+  animation: sp-dialog-in 220ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  transform-origin: center center;
+}
+/* 헤더 — **레이아웃은 seed 기본을 그대로 둔다**(display/grid 를 덮으면 제목
+   좌측이 비거나 정렬이 깨진다, 2026-08-14 실사고). 타이포만 조정. */
+/* 제목은 크기보다 굵기·자간으로 위계를 만든다 (외치지 않게) */
+.sp-dialog-header > *:first-child {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  line-height: 1.25;
+}
+.sp-dialog-header > *:not(:first-child) {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--seed-color-fg-neutral-muted, #6e6e73);
+}
+/* 본문 — 길어지면 여기만 스크롤 */
+.sp-dialog > *:not(.sp-dialog-header):not(.sp-dialog-footer) {
+  overflow-y: auto;
+}
+/* 푸터: 버튼은 항상 가로 한 줄, 우측 정렬(주 동작이 맨 오른쪽) */
+.sp-dialog-footer {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--seed-color-stroke-neutral-muted, rgba(0, 0, 0, 0.07));
+}
+.sp-dialog-footer > button {
+  width: auto !important;
+  flex: 0 0 auto;
+}
+.sp-dialog input:not([type='checkbox']):not([type='radio']):not([type='range']),
+.sp-dialog select,
+.sp-dialog textarea {
+  height: 40px;
+  min-height: 40px;
+  transition: border-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sp-dialog textarea {
+  height: auto;
+  min-height: 88px;
+}
+/* 촉각 피드백 — 누르는 순간 살짝 눌린다(물리적 반응) */
+.sp-dialog button {
+  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sp-dialog button:active:not(:disabled) {
+  transform: scale(0.985);
+}
+/* 스크림 — 애플식 딤 + 블러 머티리얼. 뒤 화면을 밀어내 지금 할 일에 집중시킨다.
+   뷰포트에 고정해 스크롤과 무관하게 덮는다. */
+.sp-dialog-backdrop {
+  background: rgba(0, 0, 0, 0.28) !important;
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  position: fixed !important;
+  inset: 0 !important;
+  animation: sp-backdrop-in 220ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+/* 🚨 팝업은 **항상 뷰포트 정중앙** — SEED positioner 는 기본이 스크롤 조상
+   안에 놓여, 페이지를 스크롤하면 팝업이 아래로 밀려 화면 밖까지 내려갔다
+   (실사고 2026-08-18: "스크롤해서 밑에 보일 때가 있다"). fixed 로 고정한다 */
+.seed-dialog__positioner {
+  position: fixed !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px;
+  z-index: 50;
+}
+/* 긴 팝업은 화면을 넘지 않게 내부 스크롤 — 배경이 아니라 팝업 안에서 민다 */
+.sp-dialog {
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+}
+/* ── 경고 팝업(AlertDialog)도 같은 규격 — 삭제·초기화 확인 등 ────────── */
+/* 루트 클래스는 seed-dialog__content 다 — data-part 도 alert-dialog 클래스도
+   아니어서 예전 셀렉터가 안 먹고 패딩이 24+24 로 이중이었다(제목 49px 들여쓰기) */
+[role='alertdialog'] {
+  /* 내부 헤더/본문/푸터가 자체 패딩(20px)을 갖는다 — 루트는 0 으로 두고
+     아래에서 24 로 통일한다(팝업 종류가 달라도 테두리~내용 24px 고정) */
+  padding: 0 !important;
+  border-radius: 20px !important;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 32px 64px -24px rgba(0, 0, 0, 0.3) !important;
+  animation: sp-dialog-in 220ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+[data-part='backdrop'] {
+  background: rgba(0, 0, 0, 0.28) !important;
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+}
+
+/* ── 전 화면 버튼 촉각 피드백 — 누르면 살짝 눌린다 ───────────────────── */
+button:not(:disabled):active {
+  transform: scale(0.985);
+}
+button {
+  transition:
+    transform 120ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+
+/* ══ 팝업 내부 규격 (.sp-popup) — 모든 팝업이 같은 자로 재단되게 ══════════
+   Dialog · Drawer · AlertDialog 는 뼈대가 서로 다르다. 그래서 **레이아웃 구조는
+   건드리지 않고**(덮으면 정렬이 깨진다) 크기·간격·타이포만 한 규격으로 맞춘다.
+   기준: 컨트롤 높이 40 / 모서리 10 / 라벨 13·600 / 필드 간격 16 / 버튼 간격 8 */
+.sp-popup,
+[role='alertdialog'] {
+  --sp-control-h: 40px;
+  --sp-gap: 16px;
+}
+/* 컨트롤 — 입력·셀렉트·버튼이 모두 같은 높이·모서리 */
+.sp-popup input:not([type='checkbox']):not([type='radio']):not([type='range']),
+.sp-popup select,
+[role='alertdialog'] input,
+[role='alertdialog'] select {
+  height: var(--sp-control-h);
+  min-height: var(--sp-control-h);
+  font-size: 14px;
+}
+/* 🚨 버튼은 **최소 높이만** — 고정 height 를 주면 두 줄짜리 선택 버튼
+   (업로드의 종류·LT 그리드처럼 아이콘/설명이 함께 있는 것)의 내용이
+   테두리 밖으로 넘쳐 아래 텍스트와 겹친다 (사용자 신고 2026-08-31).
+   한 줄 버튼은 min-height 로 종전과 같은 40px 이 유지된다. */
+.sp-popup button:not([aria-label='닫기']),
+[role='alertdialog'] button {
+  min-height: var(--sp-control-h);
+  font-size: 14px;
+}
+.sp-popup textarea {
+  min-height: 88px;
+  font-size: 14px;
+}
+/* 버튼 — 폭·여백을 통일해 크기가 들쭉날쭉하지 않게 */
+.sp-popup button:not([aria-label='닫기']),
+[role='alertdialog'] button {
+  padding-inline: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.sp-popup button:not([aria-label='닫기']):not(.sp-btn-free),
+[role='alertdialog'] button {
+  min-width: 88px;
+}
+/* 라벨 — 굵기·크기·아래 간격 고정 */
+.sp-popup label,
+.sp-popup .sp-field-label,
+[role='alertdialog'] label {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+/* 필드 사이 간격 — 폼이 어떤 컨테이너를 쓰든 같은 리듬 */
+.sp-popup form > * + *,
+.sp-popup .sp-fields > * + * {
+  margin-top: var(--sp-gap);
+}
+/* 체크박스 줄은 컨트롤 규격에서 제외 */
+.sp-popup input[type='checkbox'] {
+  height: 16px;
+  min-height: 16px;
+}
+
+/* 경고 팝업 내부 여백 — 사방 24px 로 통일 */
+[role='alertdialog'] .seed-dialog__header {
+  padding: 24px 24px 12px !important;
+  /* seed 기본은 가운데 정렬이라 제목이 안쪽으로 들어가 보인다 —
+     다른 팝업과 같은 좌측 정렬로 통일 */
+  align-items: flex-start !important;
+  text-align: left !important;
+}
+[role='alertdialog'] .seed-dialog__title,
+[role='alertdialog'] .seed-dialog__description {
+  text-align: left !important;
+}
+[role='alertdialog'] .seed-dialog__body,
+[role='alertdialog'] .seed-dialog__description {
+  padding-inline: 24px !important;
+}
+[role='alertdialog'] .seed-dialog__footer {
+  padding: 16px 24px 24px !important;
+}
+
+/* 경고 팝업 푸터 — seed 기본은 세로 스택이라 버튼이 위아래로 쌓인다.
+   팝업 종류가 달라도 액션 줄은 항상 가로 한 줄·우측 정렬로 통일한다. */
+[role='alertdialog'] .seed-dialog__footer,
+.sp-popup .seed-dialog__footer {
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+[role='alertdialog'] .seed-dialog__footer > button,
+.sp-popup .seed-dialog__footer > button {
+  width: auto !important;
+  flex: 0 0 auto;
+}
+
+/* 모션 최소화 설정 존중 */
+@media (prefers-reduced-motion: reduce) {
+  .sp-dialog,
+  .sp-dialog-backdrop {
+    animation: none;
+  }
+  .sp-dialog button:active:not(:disabled),
+  button:not(:disabled):active {
+    transform: none;
+  }
+  [data-part='content'][role='alertdialog'],
+  .seed-alert-dialog__content {
+    animation: none;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--ap-font);
+  font-size: 15px;
+  line-height: 1.47;
+  background: var(--ap-bg, #f5f5f7);
+  color: var(--ap-ink, #1d1d1f);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* KaTeX sizing inside OCR text blocks */
+.latex-inline .katex {
+  font-size: 1em;
+}
+
+/* ---------------------------------------------------------------------------
+ * Interaction feel — press / hover / focus / entrance (transform+opacity only)
+ * ------------------------------------------------------------------------- */
+
+/* 제목: 살짝 좁힌 자간 + 한국어 단어 단위 줄바꿈 */
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+}
+
+/* 키보드 포커스 링 — seed 포커스 토큰, 마우스 클릭에는 나타나지 않음 */
+:is(button, a, input, select, textarea, [role='button'], [role='slider'], [tabindex]):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.28);
+}
+
+/* 눌림 피드백 — pointer-down 즉시(100ms), 복귀는 부드럽게(200ms) */
+button,
+[role='button'],
+nav a {
+  transition: transform 200ms ease-out;
+}
+button:not(:disabled):active,
+[role='button']:not([aria-disabled='true']):active,
+nav a:active {
+  transform: scale(0.97);
+  transition-duration: 100ms;
+}
+
+/* 카드·리스트 행 hover — 배경 틴트 + 아주 약한 리프트 (무거운 그림자 금지) */
+.hover-raise {
+  transition:
+    background-color 150ms ease-out,
+    box-shadow 200ms ease-out,
+    transform 200ms ease-out;
+}
+.hover-raise:hover {
+  background-color: var(--seed-color-bg-layer-default-pressed);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px -12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+.hover-raise:active {
+  transform: translateY(0) scale(0.99);
+  transition-duration: 100ms;
+}
+
+/* 진입 애니메이션 — 짧은 opacity + translateY(4px), 감쇠 느낌(바운스 없음) */
+@keyframes enter-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes enter-fade-opacity {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.enter-fade {
+  animation: enter-fade 200ms ease-out both;
+}
+
+/* 재생 슬라이더 — 네이티브 1:1 트래킹 유지, seed 토큰으로만 스타일링 */
+.seed-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 20px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.seed-range:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+.seed-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--seed-color-bg-neutral-weak);
+}
+.seed-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 1px solid var(--seed-color-stroke-neutral-solid);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: transform 100ms ease-out;
+}
+.seed-range:not(:disabled):hover::-webkit-slider-thumb,
+.seed-range:not(:disabled):active::-webkit-slider-thumb {
+  transform: scale(1.1);
+}
+.seed-range::-moz-range-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--seed-color-bg-neutral-weak);
+}
+.seed-range::-moz-range-progress {
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--seed-color-bg-brand-solid);
+}
+.seed-range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 1px solid var(--seed-color-stroke-neutral-solid);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: transform 100ms ease-out;
+}
+.seed-range:not(:disabled):hover::-moz-range-thumb {
+  transform: scale(1.1);
+}
+.seed-range:focus-visible {
+  outline: none;
+}
+.seed-range:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--seed-color-stroke-focus-ring);
+  outline-offset: 2px;
+}
+.seed-range:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--seed-color-stroke-focus-ring);
+  outline-offset: 2px;
+}
+
+/* 모션 최소화 — transform 계열은 끄고 opacity 페이드만 유지 */
+@media (prefers-reduced-motion: reduce) {
+  button,
+  [role='button'],
+  nav a,
+  .hover-raise,
+  .seed-range::-webkit-slider-thumb,
+  .seed-range::-moz-range-thumb {
+    transition: none;
+  }
+  button:not(:disabled):active,
+  [role='button']:not([aria-disabled='true']):active,
+  nav a:active,
+  .hover-raise:hover,
+  .hover-raise:active,
+  .seed-range:not(:disabled):hover::-webkit-slider-thumb,
+  .seed-range:not(:disabled):active::-webkit-slider-thumb,
+  .seed-range:not(:disabled):hover::-moz-range-thumb {
+    transform: none;
+  }
+  .enter-fade {
+    animation: enter-fade-opacity 200ms ease-out both;
+  }
+}
+
+/* ── PDF 캡처 모드 (리포트 [PDF 저장]) ──
+   인쇄와 같은 숨김/표시 규칙을 DOM 캡처에도 적용한다. print: 유틸리티는
+   @media print 에서만 작동하므로 클래스 문자열 매칭으로 흉내낸다. */
+.pdf-capture [class*='print:hidden'] {
+  display: none !important;
+}
+.pdf-capture [class*='print:block'] {
+  display: block !important;
+}

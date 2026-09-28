@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ble-live-stop"
+description = "Enables the ble_live_stop command without any pre-configured scope."
+commands.allow = ["ble_live_stop"]
+
+[[permission]]
+identifier = "deny-ble-live-stop"
+description = "Denies the ble_live_stop command without any pre-configured scope."
+commands.deny = ["ble_live_stop"]

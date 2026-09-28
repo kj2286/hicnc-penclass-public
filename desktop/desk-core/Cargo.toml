@@ -1,0 +1,30 @@
+[package]
+name = "desk-core"
+description = "펜클래스 데스크 코어 — 크래들 수신·BLE 이름 변경·웹 호환 변환 (GUI 무관)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+postdemy-pen-core = { path = "../vendor/postdemy-pen-core" }
+postdemy-pen-desktop = { path = "../vendor/postdemy-pen-desktop" }
+btleplug = "0.11"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
+futures = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+flate2 = "1"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+uuid = "1"
+directories = "5"
+serialport = { version = "4.9", default-features = false }
+ipp = { version = "7", default-features = false, features = ["client-rustls"] }
+mdns-sd = "0.21"
+ureq = "3"
+
+# 학원 로고 → 윈도우 바로가기용 .ico 변환 (brand.rs). 윈도우에서만 쓴다.
+[target.'cfg(windows)'.dependencies]
+image = { version = "0.25", default-features = false, features = ["png"] }
+ico = "0.4"

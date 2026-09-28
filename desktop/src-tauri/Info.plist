@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- BLE 펜 이름 변경에 필요 — 없으면 macOS TCC 가 앱을 강제 종료한다 (실크래시로 확인) -->
+  <key>NSBluetoothAlwaysUsageDescription</key>
+  <string>크래들에 꽂힌 스마트펜의 블루투스 이름을 변경하기 위해 블루투스를 사용합니다.</string>
+  <key>NSBluetoothPeripheralUsageDescription</key>
+  <string>크래들에 꽂힌 스마트펜의 블루투스 이름을 변경하기 위해 블루투스를 사용합니다.</string>
+</dict>
+</plist>

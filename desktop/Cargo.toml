@@ -1,0 +1,33 @@
+# 하이씨앤씨 펜클래스 선생님 PC 프로그램 (macOS / Windows).
+#
+# vendor/ 의 장치 SDK는 별도 제공된다. 필요한 경로는 vendor/VENDOR.md 참고.
+# SDK 는 workspace.package / workspace.lints 상속을 쓰므로 여기서 동일하게 제공한다.
+[workspace]
+resolver = "3"
+members = ["desk-core", "src-tauri", "vendor/postdemy-pen-core", "vendor/postdemy-pen-desktop"]
+
+[workspace.package]
+version = "0.1.2"
+edition = "2024"
+rust-version = "1.90"
+license = "UNLICENSED"
+publish = false
+
+[workspace.lints.rust]
+missing_debug_implementations = "warn"
+unsafe_code = "forbid"
+
+# SDK 크레이트가 상속하는 lint 세트 — SDK 리포와 동일하게 유지한다.
+[workspace.lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+indexing_slicing = "deny"
+integer_division = "warn"
+todo = "warn"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true

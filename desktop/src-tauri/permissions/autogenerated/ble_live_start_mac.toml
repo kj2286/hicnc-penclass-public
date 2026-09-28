@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ble-live-start-mac"
+description = "Enables the ble_live_start_mac command without any pre-configured scope."
+commands.allow = ["ble_live_start_mac"]
+
+[[permission]]
+identifier = "deny-ble-live-start-mac"
+description = "Denies the ble_live_start_mac command without any pre-configured scope."
+commands.deny = ["ble_live_start_mac"]

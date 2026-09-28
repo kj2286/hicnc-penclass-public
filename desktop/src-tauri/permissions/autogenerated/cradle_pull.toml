@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-cradle-pull"
+description = "Enables the cradle_pull command without any pre-configured scope."
+commands.allow = ["cradle_pull"]
+
+[[permission]]
+identifier = "deny-cradle-pull"
+description = "Denies the cradle_pull command without any pre-configured scope."
+commands.deny = ["cradle_pull"]
