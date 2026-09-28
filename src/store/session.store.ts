@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase, usernameToEmail } from '@/lib/supabase';
 import { QuickStartError, requestQuickStartSession } from '@/lib/quick-start';
+import { isStaffRole } from '../../shared/staff-access';
 
 let quickStartInProgress = false;
 let quickStartGeneration = 0;
@@ -77,7 +78,7 @@ async function fetchProfile(userId: string): Promise<Profile | null> {
     .select('*')
     .eq('id', userId)
     .maybeSingle();
-  if (error || !data) return null;
+  if (error || !data || !isStaffRole(data.role)) return null;
   return mapProfileRow(data);
 }
 
@@ -166,8 +167,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }
     const profile = await fetchProfile(data.user.id);
     if (!profile) {
-      await supabase.auth.signOut();
-      return { error: '프로필 정보를 찾을 수 없습니다. 관리자에게 문의해주세요.' };
+      await supabase.auth.signOut({ scope: 'local' });
+      set({ status: 'signedOut', profile: null, academy: null });
+      return { error: '교사 정보를 확인하지 못했습니다. 학생은 별도 계정 없이 등록합니다.' };
     }
     set({
       status: 'signedIn',
@@ -231,5 +233,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     const profile = await fetchProfile(current.id);
     if (profile)
       set({ profile, academy: await fetchAcademy(profile.academyId) });
+    else
+      set({ status: 'signedOut', profile: null, academy: null });
   },
 }));

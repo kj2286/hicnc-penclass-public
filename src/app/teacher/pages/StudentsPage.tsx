@@ -4,8 +4,8 @@
  * - 상단: 정렬 / 학교급(전체·초·중·고) 필터 / 재원·퇴원 탭 / 인원수 / 이름 검색 / 학생 추가
  * - 테이블: 체크박스 다중선택(일괄 퇴원·복귀), 학년·상태·연락처·학교·펜 보유·상세보기
  * - 학생 추가 팝업: 필수(이름·학년) + 선택(연락처 2종·학교·수업 시작일·집주소·특이사항·펜)
- * - 상세보기 팝업: 전체 프로필 편집 + 펜 데이터 / 비밀번호 재발급 / 퇴원·복귀·영구삭제
- * - 퇴원 = deleted_at(소프트 삭제) 재사용. 계정/필기 데이터는 유지되고 복귀 가능.
+ * - 상세보기 팝업: 전체 프로필 편집 + 펜 데이터 / 퇴원·복귀·영구삭제
+ * - 퇴원 = deleted_at(소프트 삭제) 재사용. 학생 정보와 필기 데이터는 유지되고 복귀 가능.
  */
 import {
   useCallback,
@@ -23,7 +23,7 @@ import {
 import { isReportPendingForStudent } from '@/lib/learn-report';
 import { loadAiStatus } from '@/lib/auto-grade';
 import { Badge, Skeleton } from '@seed-design/react';
-import { Bluetooth, BluetoothOff, Copy, Search, UserPlus } from 'lucide-react';
+import { Bluetooth, BluetoothOff, Search, UserPlus } from 'lucide-react';
 import { ActionButton } from 'seed-design/ui/action-button';
 import {
   AlertDialogAction,
@@ -47,21 +47,12 @@ import {
   TextFieldInput,
   TextFieldTextarea,
 } from 'seed-design/ui/text-field';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Drawer } from '@/components/ui/drawer';
 import {
   createStudent,
   summarizeSubmissionsByStudent,
   listMyStudents,
   listStudentSubmissions,
-  resetStudentPassword,
   studentTrashAction,
   updateStudentProfile,
   type SchoolLevel,
@@ -81,17 +72,7 @@ import { useToast } from '../components/toast';
 import { TokenSelect } from '../components/TokenSelect';
 import { useMultipenStore } from '@/store/multipen.store';
 import { assignPenUnified } from '@/lib/pen-assign';
-import {
-  CredentialResult,
-  type Credential,
-} from '../components/CredentialResult';
-import { copyText, formatDate } from '../format';
-
-type ResultState = {
-  title: string;
-  studentName: string;
-  credential: Credential;
-};
+import { formatDate } from '../format';
 
 type LevelFilter = 'all' | SchoolLevel;
 // 정렬 규칙은 순수 모듈로 뺐다 — scripts/student-sort-test.ts 가 검증한다
@@ -559,12 +540,8 @@ export function StudentsPage() {
   const [addForm, setAddForm] = useState<ProfileForm>(EMPTY_FORM);
   const [creating, setCreating] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
-  /** 계속 등록 모드 — 발급 후 다이얼로그를 닫지 않고 폼만 초기화 */
+  /** 계속 등록 모드 — 등록 후 다이얼로그를 닫지 않고 폼만 초기화 */
   const [keepAdding, setKeepAdding] = useState(false);
-  const [lastCred, setLastCred] = useState<ResultState | null>(null);
-
-  // 발급/재발급 결과
-  const [result, setResult] = useState<ResultState | null>(null);
 
   // 상세보기
   const [detail, setDetail] = useState<StudentRow | null>(null);
@@ -574,8 +551,6 @@ export function StudentsPage() {
   const [showSubs, setShowSubs] = useState(false);
 
   // 단건 확인 다이얼로그
-  const [resetTarget, setResetTarget] = useState<StudentRow | null>(null);
-  const [resetting, setResetting] = useState(false);
   const [purgeTarget, setPurgeTarget] = useState<StudentRow | null>(null);
   const [acting, setActing] = useState(false);
 
@@ -650,25 +625,18 @@ export function StudentsPage() {
     setCreating(true);
     setAddError(null);
     try {
-      const created = await createStudent(name, formToProfile(addForm));
-      const cred: ResultState = {
-        title: '학생 계정이 발급되었습니다',
-        studentName: created.name,
-        credential: { username: created.username, password: created.password },
-      };
+      await createStudent(name, formToProfile(addForm));
       setAddForm(EMPTY_FORM);
       if (keepAdding) {
-        // 다이얼로그 유지 — 방금 발급된 계정 정보를 폼 상단에 표시
-        setLastCred(cred);
-        toast(`${created.name} 학생을 등록했습니다. 이어서 등록하세요.`, 'positive');
+        toast('학생을 추가했습니다. 이어서 등록하세요.', 'positive');
       } else {
         setAddOpen(false);
-        setResult(cred);
+        toast('학생을 추가했습니다.', 'positive');
       }
       void load();
     } catch (err) {
       setAddError(
-        err instanceof Error ? err.message : '학생 계정 발급에 실패했습니다.',
+        err instanceof Error ? err.message : '학생을 추가하지 못했습니다.',
       );
     } finally {
       setCreating(false);
@@ -774,40 +742,13 @@ export function StudentsPage() {
     void load();
   };
 
-  const submitReset = async () => {
-    if (!resetTarget || resetting) return;
-    setResetting(true);
-    try {
-      const r = await resetStudentPassword(resetTarget.id);
-      setResult({
-        title: '비밀번호가 재발급되었습니다',
-        studentName: resetTarget.name,
-        credential: { username: r.username, password: r.password },
-      });
-      setResetTarget(null);
-      setDetail(null);
-    } catch (err) {
-      toast(
-        err instanceof Error ? err.message : '비밀번호 재발급에 실패했습니다.',
-        'critical',
-      );
-    } finally {
-      setResetting(false);
-    }
-  };
-
-  const copyPassword = async (pw: string) => {
-    const ok = await copyText(pw);
-    toast(ok ? '임시 비밀번호를 복사했습니다.' : '복사에 실패했습니다.', ok ? 'positive' : 'critical');
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-ink">학생 관리</h2>
           <p className="mt-0.5 text-sm text-ink-muted">
-            학생 등록부터 퇴원까지 — 계정과 프로필을 관리하세요.
+            학생 정보와 재원 상태를 관리하세요.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -983,7 +924,7 @@ export function StudentsPage() {
                 </th>
                 <th className="px-3 py-3 font-medium">학년</th>
                 <th className="px-3 py-3 font-medium">상태</th>
-                <th className="px-3 py-3 font-medium">학생 이름 · 아이디</th>
+                <th className="px-3 py-3 font-medium">학생 이름</th>
                 <th className="px-3 py-3 font-medium">학생 연락처</th>
                 <th className="px-3 py-3 font-medium">학부모 연락처</th>
                 <th className="px-3 py-3 font-medium">학교</th>
@@ -1018,20 +959,6 @@ export function StudentsPage() {
                   </td>
                   <td className="px-3 py-3">
                     <div className="font-semibold text-ink">{s.name}</div>
-                    <div className="mt-0.5 text-xs text-ink-subtle">
-                      <span className="font-mono">{s.username ?? '-'}</span>
-                      {s.tempPassword && (
-                        <button
-                          type="button"
-                          aria-label="임시 비밀번호 복사"
-                          title={`임시 비밀번호 복사 (${s.tempPassword})`}
-                          onClick={() => void copyPassword(s.tempPassword!)}
-                          className="ml-1.5 rounded p-0.5 align-middle text-ink-subtle hover:bg-neutral-weak hover:text-ink"
-                        >
-                          <Copy size={12} />
-                        </button>
-                      )}
-                    </div>
                   </td>
                   <td className="px-3 py-3 text-ink-muted">
                     {s.studentPhone || '-'}
@@ -1097,12 +1024,11 @@ export function StudentsPage() {
           if (!o) {
             setAddForm(EMPTY_FORM);
             setAddError(null);
-            setLastCred(null);
             setKeepAdding(false);
           }
         }}
         title="학생 개별 등록"
-        description="등록하면 로그인 아이디와 임시 비밀번호가 자동 발급됩니다."
+        description="학생 이름과 학년을 입력해 등록하세요."
         footer={
           <>
             <ActionButton
@@ -1140,15 +1066,6 @@ export function StudentsPage() {
             void submitCreate();
           }}
         >
-          {lastCred && (
-            <div className="mb-3">
-              <Callout
-                tone="positive"
-                title={`방금 등록: ${lastCred.studentName}`}
-                description={`아이디 ${lastCred.credential.username} · 임시 비밀번호 ${lastCred.credential.password} — 잊기 전에 전달하세요.`}
-              />
-            </div>
-          )}
           <ProfileFields
             form={addForm}
             setForm={(u) => setAddForm(u)}
@@ -1181,32 +1098,10 @@ export function StudentsPage() {
             </span>
           )
         }
-        description={
-          detail && (
-            <>
-              아이디 <span className="font-mono">{detail.username}</span>
-              {detail.tempPassword && (
-                <>
-                  {' '}
-                  · 임시 비밀번호{' '}
-                  <span className="font-mono">{detail.tempPassword}</span>
-                </>
-              )}
-              {' '}· 등록 {formatDate(detail.createdAt)}
-            </>
-          )
-        }
+        description={detail && `등록 ${formatDate(detail.createdAt)}`}
         footer={
           detail && (
             <>
-              <ActionButton
-                type="button"
-                variant="neutralWeak"
-                size="small"
-                onClick={() => setResetTarget(detail)}
-              >
-                비밀번호 재발급
-              </ActionButton>
               {detail.deletedAt ? (
                 <>
                   <ActionButton
@@ -1350,64 +1245,6 @@ export function StudentsPage() {
         </AlertDialogContent>
       </AlertDialogRoot>
 
-      {/* 발급/재발급 결과 */}
-      <Dialog open={result !== null} onOpenChange={(o) => !o && setResult(null)}>
-        <DialogContent>
-          {result && (
-            <>
-              <DialogHeader>
-                <DialogTitle>{result.title}</DialogTitle>
-                <DialogDescription>
-                  {result.studentName} 학생의 로그인 정보입니다.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="py-2">
-                <CredentialResult
-                  studentName={result.studentName}
-                  credential={result.credential}
-                />
-              </div>
-              <DialogFooter>
-                <ActionButton variant="brandSolid" onClick={() => setResult(null)}>
-                  확인
-                </ActionButton>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* 재발급 확인 */}
-      <AlertDialogRoot
-        open={resetTarget !== null}
-        onOpenChange={(o) => !o && setResetTarget(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>비밀번호를 재발급할까요?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {resetTarget?.name} 학생의 기존 비밀번호는 더 이상 사용할 수 없게
-              되고, 새 임시 비밀번호가 발급됩니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction
-              variant="neutralWeak"
-              onClick={() => setResetTarget(null)}
-            >
-              취소
-            </AlertDialogAction>
-            <AlertDialogAction
-              variant="brandSolid"
-              loading={resetting}
-              onClick={() => void submitReset()}
-            >
-              재발급
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialogRoot>
-
       {/* 일괄 퇴원/복귀 확인 */}
       <AlertDialogRoot
         open={bulkConfirm !== null}
@@ -1422,7 +1259,7 @@ export function StudentsPage() {
             </AlertDialogTitle>
             <AlertDialogDescription>
               {bulkConfirm === 'trash'
-                ? '퇴원 학생은 로그인 목록에서 숨겨지지만 필기 데이터는 유지되며, 퇴원생 탭에서 언제든 복귀할 수 있습니다.'
+                ? '퇴원 학생은 재원생 목록에서 빠지지만 필기 데이터는 유지되며, 퇴원생 탭에서 언제든 복귀할 수 있습니다.'
                 : '선택한 학생들이 재원생 목록으로 돌아옵니다.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -1453,7 +1290,7 @@ export function StudentsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>정말 영구 삭제할까요?</AlertDialogTitle>
             <AlertDialogDescription>
-              {purgeTarget?.name} 학생의 계정과 모든 필기 데이터(제출·피드백·
+              {purgeTarget?.name} 학생 정보와 모든 필기 데이터(제출·피드백·
               스토리지)가 완전히 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
             </AlertDialogDescription>
           </AlertDialogHeader>

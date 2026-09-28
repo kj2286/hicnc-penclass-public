@@ -32,9 +32,6 @@ export type StudentProfileFields = {
 export type StudentRow = StudentProfileFields & {
   id: string;
   name: string;
-  username: string | null;
-  tempPassword: string | null;
-  mustChangePassword: boolean;
   createdAt: string;
   /** null = 재원, 값 있음 = 퇴원 상태 */
   deletedAt: string | null;
@@ -125,9 +122,6 @@ function mapStudent(r: Record<string, unknown>): StudentRow {
     id: String(r.id),
     teacherId: (r.teacher_id as string | null) ?? null,
     name: String(r.name ?? ''),
-    username: (r.username as string | null) ?? null,
-    tempPassword: (r.temp_password as string | null) ?? null,
-    mustChangePassword: Boolean(r.must_change_password),
     createdAt: String(r.created_at ?? ''),
     deletedAt: (r.deleted_at as string | null) ?? null,
     schoolLevel: (r.school_level as SchoolLevel | null) ?? null,
@@ -239,13 +233,16 @@ async function authedPost<T>(path: string, body: unknown): Promise<T> {
 
 // ---------- 학생 관리 (선생님) ----------
 
+// 학생 기록만 조회한다. 기존 학생의 로그인 정보는 목록으로 가져오지 않는다.
+const STUDENT_SELECT = 'id,name,teacher_id,created_at,deleted_at,school_level,grade,student_phone,parent_phone,school,start_date,address,notes,has_pen';
+
 export async function listMyStudents(): Promise<StudentRow[]> {
   const supabase = requireSupabase();
   const { data: session } = await supabase.auth.getSession();
   const uid = session.session?.user.id;
   const { data, error } = await supabase
     .from('sp_profiles')
-    .select('*')
+    .select(STUDENT_SELECT)
     .eq('role', 'student')
     .eq('teacher_id', uid)
     .order('created_at', { ascending: false });
@@ -267,7 +264,7 @@ export async function listMyStudents(): Promise<StudentRow[]> {
       if (ids.length > 0) {
         const { data: rows } = await supabase
           .from('sp_profiles')
-          .select('*')
+          .select(STUDENT_SELECT)
           .eq('role', 'student')
           .in('id', ids);
         assigned = (rows ?? [])
@@ -526,7 +523,7 @@ export type StudentProfileInput = Partial<{
 export function createStudent(
   name: string,
   profile: StudentProfileInput = {},
-): Promise<{ id: string; name: string; username: string; password: string }> {
+): Promise<{ id: string; name: string }> {
   return authedPost('/api/create-student', { name, profile });
 }
 
@@ -540,12 +537,6 @@ export function updateStudentProfile(
     studentId,
     profile,
   });
-}
-
-export function resetStudentPassword(
-  studentId: string,
-): Promise<{ username: string; password: string }> {
-  return authedPost('/api/reset-student-password', { studentId });
 }
 
 export async function changeMyPassword(newPassword: string): Promise<void> {
@@ -1539,7 +1530,7 @@ export async function listAcademyStudents(): Promise<StudentRow[]> {
   if (teacherIds.length === 0) return [];
   const { data, error } = await supabase
     .from('sp_profiles')
-    .select('*')
+    .select(STUDENT_SELECT)
     .eq('role', 'student')
     .in('teacher_id', teacherIds)
     .is('deleted_at', null)

@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { isStaffRole } from '../shared/staff-access.js';
 
 export function serviceClient(): SupabaseClient {
   const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
@@ -37,30 +38,19 @@ export async function requireCaller(
   if (!profile) return { error: '프로필을 찾을 수 없습니다.', status: 403 };
 
   const caller = profile as CallerProfile;
+  if (!isStaffRole(caller.role)) {
+    return { error: '학생 계정은 사용하지 않습니다. 선생님 화면에서 학생 기록을 관리해 주세요.', status: 403 };
+  }
   if (roles && !roles.includes(caller.role)) {
     return { error: '권한이 없습니다.', status: 403 };
   }
   return { caller, admin };
 }
 
-const USERNAME_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
-
-export function randomFrom(alphabet: string, length: number): string {
-  let out = '';
-  for (let i = 0; i < length; i += 1) {
-    out += alphabet[Math.floor(Math.random() * alphabet.length)];
-  }
-  return out;
-}
-
-export function generateUsername(): string {
-  return `pen${randomFrom(USERNAME_ALPHABET, 5)}`;
-}
-
-/** 학생·선생님 임시 비밀번호는 발급마다 생성하며 첫 로그인에서 변경한다. */
+/** 교사 임시 비밀번호는 발급마다 생성하며 첫 로그인에서 변경한다. */
 export function generatePassword(): string {
   return `Hc1!${randomBytes(9).toString('base64url')}`;
 }
 
-// src/lib/supabase.ts의 아이디 로그인 규칙과 같아야 한다.
+// 이전 계정 형식의 호환 상수. 새 학생 계정 발급에는 사용하지 않는다.
 export const STUDENT_EMAIL_DOMAIN = 'student.penclass.app';

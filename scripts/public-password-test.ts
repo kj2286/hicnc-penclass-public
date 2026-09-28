@@ -17,4 +17,4 @@ try {
 } finally {
   Math.random = savedRandom;
 }
-console.log('2 PASS / 0 FAIL (독립 임시 비밀번호 발급 및 학생/선생님 비밀번호 정책)');
+console.log('2 PASS / 0 FAIL (독립 임시 비밀번호 발급 및 선생님 비밀번호 정책)');

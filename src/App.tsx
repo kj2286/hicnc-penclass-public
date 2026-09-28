@@ -13,15 +13,13 @@ import { SignupPage } from '@/app/auth/SignupPage';
 import { SetupRequiredPage } from '@/app/auth/SetupRequiredPage';
 import { supabase } from '@/lib/supabase';
 import { LandingPage } from '@/app/landing/LandingPage';
-import { StudentShell } from '@/app/student/StudentShell';
 import { TeacherShell } from '@/app/teacher/TeacherShell';
-import { studentRoutes } from '@/app/student/routes';
 import { teacherRoutes } from '@/app/teacher/routes';
 
 export function roleHome(role: Role): string {
   switch (role) {
     case 'student':
-      return '/s';
+      return '/login';
     case 'teacher':
       return '/t/papers';
     // 슈퍼관리자 화면은 하이씨앤씨 펜클래스에 없다 — 타입만 유지하고 로그인으로 보낸다
@@ -75,12 +73,7 @@ const router = createBrowserRouter([
           </SnackbarProvider>
         ),
       },
-      {
-        element: <RequireRole role="student" />,
-        children: [
-          { path: '/s', element: <StudentShell />, children: studentRoutes },
-        ],
-      },
+      { path: '/s/*', element: <Navigate to="/login" replace /> },
       {
         element: <RequireRole role="teacher" />,
         children: [
